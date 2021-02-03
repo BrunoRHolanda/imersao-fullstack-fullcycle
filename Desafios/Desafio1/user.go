@@ -1,7 +1,6 @@
-package Desafio_1
+package Desafio1
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/asaskevich/govalidator"
@@ -32,8 +31,8 @@ func (user *User) isValid() error {
 
 func NewUser(name string, email string) (*User, error) {
 	user := User{
-		Name:      name,
-		Email:     email,
+		Name:  name,
+		Email: email,
 	}
 
 	user.ID = uuid.NewV4().String()
