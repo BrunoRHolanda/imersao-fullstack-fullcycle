@@ -12,6 +12,7 @@ type Processor struct {
 	DeliveryChan chan ckafka.Event
 }
 
+//pp
 func NewProcessor(database *gorm.DB, producer *ckafka.Producer, deliveryChan chan ckafka.Event) *Processor {
 	return &Processor{
 		Database:     database,

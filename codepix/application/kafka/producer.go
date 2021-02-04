@@ -18,6 +18,7 @@ func NewKafkaProducer() *ckafka.Producer {
 	return p
 }
 
+// pap
 func Publish(msg string, topic string, producer *ckafka.Producer, deliveryChan chan ckafka.Event) error {
 	message := &ckafka.Message{
 		TopicPartition: ckafka.TopicPartition{Topic: &topic, Partition: ckafka.PartitionAny},

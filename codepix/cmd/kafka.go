@@ -32,6 +32,8 @@ var kafkaCmd = &cobra.Command{
 
 		kafka.Publish("Ola kafka", "test", producer, deliveryChan)
 		kafka.DeliveryReport(deliveryChan)
+
+		// kafkaProcesser := kafka.NewProcessor()
 	},
 }
 
