@@ -16,10 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 
-	"github.com/spf13/cobra"
 	"github.com/BrunoRHolanda/imersao-fullstack-fullcycle/codepix/application/kafka"
+	"github.com/spf13/cobra"
 )
 
 // kafkaCmd represents the kafka command
@@ -27,9 +27,11 @@ var kafkaCmd = &cobra.Command{
 	Use:   "kafka",
 	Short: "Start consuming transactions using Apache Kafka",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Produzindo mensagem")
+		deliveryChan := make(chan ckafka.Event)
 		producer := kafka.NewKafkaProducer()
-		kafka.Publish("Ola kafka", "test", producer)
+
+		kafka.Publish("Ola kafka", "test", producer, deliveryChan)
+		kafka.DeliveryReport(deliveryChan)
 	},
 }
 
