@@ -11,7 +11,7 @@ import (
 func StartGrpcServer(database *gorm.DB, port int) {
 	grpcServer := grpc.NewServer()
 
-	address := fmt.Sprintf("0.0.0.0:#{port}")
+	address := fmt.Sprintf("0.0.0.0:%d", port)
 	listner, err := net.Listen("tcp", address)
 
 	if err != nil {
