@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/BrunoRHolanda/imersao-fullstack-fullcycle/codepix-go/domain/model"
+	"github.com/BrunoRHolanda/imersao-fullstack-fullcycle/codepix/domain/model"
 	"log"
 	"os"
 	"path/filepath"

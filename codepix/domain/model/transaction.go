@@ -2,17 +2,16 @@ package model
 
 import (
 	"errors"
-	"time"
-
 	"github.com/asaskevich/govalidator"
 	uuid "github.com/satori/go.uuid"
+	"time"
 )
 
 const (
 	TransactionPending   string = "pending"
 	TransactionCompleted string = "completed"
 	TransactionError     string = "error"
-	TransactionConfirmed        = "confirmed"
+	TransactionConfirmed string = "confirmed"
 )
 
 type TransactionRepositoryInterface interface {
@@ -22,84 +21,80 @@ type TransactionRepositoryInterface interface {
 }
 
 type Transactions struct {
-	Transaction []*Transaction
+	Transaction []Transaction
 }
 
 type Transaction struct {
 	Base              `valid:"required"`
 	AccountFrom       *Account `valid:"-"`
-	Amount            float64  `json:"amount" valid:"notnull"`
+	AccountFromID     string   `gorm:"column:account_from_id;type:uuid;" valid:"notnull"`
+	Amount            float64  `json:"amount" gorm:"type:float" valid:"notnull"`
 	PixKeyTo          *PixKey  `valid:"-"`
-	Status            string   `json:"status" valid:"notnull"`
-	Description       string   `json:"description" valid:"notnull"`
-	CancelDescription string   `json:"cancel_description" valid:"notnull"`
+	PixKeyIdTo        string   `gorm:"column:pix_key_id_to;type:uuid;" valid:"notnull"`
+	Status            string   `json:"status" gorm:"type:varchar(20)" valid:"notnull"`
+	Description       string   `json:"description" gorm:"type:varchar(255)" valid:"-"`
+	CancelDescription string   `json:"cancel_description" gorm:"type:varchar(255)" valid:"-"`
 }
 
-func (transaction *Transaction) isValid() error {
-	_, err := govalidator.ValidateStruct(transaction)
+func init() {
+	govalidator.SetFieldsRequiredByDefault(true)
+}
 
-	if transaction.Amount <= 0 {
+func (t *Transaction) isValid() error {
+	_, err := govalidator.ValidateStruct(t)
+
+	if t.Amount <= 0 {
 		return errors.New("the amount must be greater than 0")
 	}
 
-	if transaction.Status != TransactionPending && transaction.Status != TransactionCompleted && transaction.Status != TransactionError && transaction.Status != TransactionConfirmed {
-		return errors.New("invalid status of transaction")
+	if t.Status != TransactionPending && t.Status != TransactionCompleted && t.Status != TransactionError {
+		return errors.New("invalid status for the transaction")
 	}
 
-	if transaction.PixKeyTo.AccountID == transaction.AccountFrom.ID {
-		return errors.New("the source and destination account 	cannot be the same")
+	if t.PixKeyTo.AccountID == t.AccountFromID {
+		return errors.New("the source and destination account cannot be the same")
 	}
 
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
-func NewTransaction(accountFrom *Account, amount float64, pixKeyTo *PixKey, description string) (*Transaction, error) {
+func (t *Transaction) Complete() error {
+	t.Status = TransactionCompleted
+	t.UpdatedAt = time.Now()
+	err := t.isValid()
+	return err
+}
+
+func (t *Transaction) Cancel(description string) error {
+	t.Status = TransactionError
+	t.CancelDescription = description
+	t.UpdatedAt = time.Now()
+	err := t.isValid()
+	return err
+}
+
+func NewTransaction(accountFrom *Account, amount float64, pixKeyTo *PixKey, description string, id string) (*Transaction, error) {
 	transaction := Transaction{
-		AccountFrom: accountFrom,
-		Amount:      amount,
-		PixKeyTo:    pixKeyTo,
-		Status:      TransactionPending,
-		Description: description,
+		AccountFrom:   accountFrom,
+		AccountFromID: accountFrom.ID,
+		Amount:        amount,
+		PixKeyTo:      pixKeyTo,
+		PixKeyIdTo:    pixKeyTo.ID,
+		Status:        TransactionPending,
+		Description:   description,
 	}
-
-	transaction.ID = uuid.NewV4().String()
+	if id == "" {
+		transaction.ID = uuid.NewV4().String()
+	} else {
+		transaction.ID = id
+	}
 	transaction.CreatedAt = time.Now()
-
 	err := transaction.isValid()
 	if err != nil {
 		return nil, err
 	}
 	return &transaction, nil
-}
-
-func (transaction *Transaction) Complete() error {
-	transaction.Status = TransactionCompleted
-	transaction.UpdatedAt = time.Now()
-
-	err := transaction.isValid()
-
-	return err
-}
-
-func (transaction *Transaction) Confirm() error {
-	transaction.Status = TransactionConfirmed
-	transaction.UpdatedAt = time.Now()
-
-	err := transaction.isValid()
-
-	return err
-}
-
-func (transaction *Transaction) Cancel(cancelDescription string) error {
-	transaction.Status = TransactionError
-	transaction.CancelDescription = cancelDescription
-	transaction.UpdatedAt = time.Now()
-
-	err := transaction.isValid()
-
-	return err
 }
