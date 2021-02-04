@@ -23,7 +23,7 @@ func (t *TransactionUseCase) Register(accountId string, amount float64, pixKeyTo
 		return nil, err
 	}
 
-	transaction, err := model.NewTransaction(account, amount, pixKey, description)
+	transaction, err := model.NewTransaction(account, amount, pixKey, description, "")
 	if err != nil {
 		return nil, err
 	}
