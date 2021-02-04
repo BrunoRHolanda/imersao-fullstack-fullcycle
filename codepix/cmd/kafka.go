@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/BrunoRHolanda/imersao-fullstack-fullcycle/codepix/application/kafka"
 )
 
 // kafkaCmd represents the kafka command
@@ -28,6 +29,7 @@ var kafkaCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Produzindo mensagem")
 		producer := kafka.NewKafkaProducer()
+		kafka.Publish("Ola kafka", "test", producer)
 	},
 }
 
