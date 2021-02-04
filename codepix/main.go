@@ -17,7 +17,6 @@ package main
 
 import (
 	"github.com/BrunoRHolanda/imersao-fullstack-fullcycle/codepix/cmd"
-	"github.com/spf13/cobra/cobra/cmd"
 )
 
 func main() {
