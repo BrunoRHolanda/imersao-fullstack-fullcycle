@@ -16,42 +16,45 @@ limitations under the License.
 package cmd
 
 import (
+	"github.com/BrunoRHolanda/imersao-fullstack-fullcycle/codepix/application/grpc"
+	"github.com/BrunoRHolanda/imersao-fullstack-fullcycle/codepix/application/kafka"
 	"github.com/BrunoRHolanda/imersao-fullstack-fullcycle/codepix/infrastructure/db"
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	"os"
 
-	"github.com/BrunoRHolanda/imersao-fullstack-fullcycle/codepix/application/kafka"
 	"github.com/spf13/cobra"
 )
+var (
+	gRPCPortNumber int
+)
 
-// kafkaCmd represents the kafka command
-var kafkaCmd = &cobra.Command{
-	Use:   "kafka",
-	Short: "Start consuming transactions using Apache Kafka",
+// allCmd represents the all command
+var allCmd = &cobra.Command{
+	Use:   "all",
+	Short: "Run gRPC and a Kafka consumer",
+
 	Run: func(cmd *cobra.Command, args []string) {
+		database := db.ConnectDB(os.Getenv("env"))
+		go grpc.StartGrpcServer(database, portNumber)
+
 		deliveryChan := make(chan ckafka.Event)
 		producer := kafka.NewKafkaProducer()
-		database := db.ConnectDB(os.Getenv("env"))
-
-		// kafka.Publish("Ola kafka", "test", producer, deliveryChan)
 		go kafka.DeliveryReport(deliveryChan)
-
-		kafkaProcesser := kafka.NewProcessor(database, producer, deliveryChan)
-
-		kafkaProcesser.Consume()
+		kafkaProcessor := kafka.NewProcessor(database, producer, deliveryChan)
+		kafkaProcessor.Consume()
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(kafkaCmd)
-
+	rootCmd.AddCommand(allCmd)
+	allCmd.Flags().IntVarP(&gRPCPortNumber, "grpc-port","p", 500051,"gRPC Port")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// kafkaCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// allCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// kafkaCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// allCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
