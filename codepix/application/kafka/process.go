@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"fmt"
+	appModel "github.com/BrunoRHolanda/imersao-fullstack-fullcycle/codepix/application/model"
 	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/jinzhu/gorm"
 )
@@ -43,7 +44,25 @@ func (p *Processor) Consume() {
 		msg, err := c.ReadMessage(-1)
 
 		if err == nil {
-			fmt.Println(string(msg.Value))
+			p.processMessage(msg)
 		}
 	}
+}
+
+func (p *Processor) processMessage(msg *ckafka.Message) {
+	transactionTopic := "transactions"
+	transactionConfirmationTopic := "transaction_confirmation"
+
+	switch topic := *msg.TopicPartition.Topic; topic {
+	case transactionTopic:
+	case transactionConfirmationTopic:
+	default:
+		fmt.Println("not a valid topic ", string(msg.Value))
+	}
+}
+
+func (p *Processor) processTransaction(msg *ckafka.Message) error {
+	transaction := appModel.NewTransaction()
+
+
 }
