@@ -64,5 +64,11 @@ func (p *Processor) processMessage(msg *ckafka.Message) {
 func (p *Processor) processTransaction(msg *ckafka.Message) error {
 	transaction := appModel.NewTransaction()
 
+	err := transaction.ParseJson(msg.Value)
 
+	if err != nil {
+		return err
+	}
+
+	transactionUseCase := factory.TransactionUseCaseFactory(p.Database)
 }
